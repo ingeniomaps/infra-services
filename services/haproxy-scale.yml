@@ -1,0 +1,15 @@
+# HAProxy - Override de recursos para producción FUERTE.
+# Uso: docker compose -f haproxy.yml -f haproxy-scale.yml up -d
+
+name: ${PROJECT_PREFIX:-haproxy}${PROJECT_PREFIX:+-haproxy}
+
+services:
+  haproxy:
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
