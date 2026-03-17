@@ -1,7 +1,7 @@
 # Elasticsearch - Producción BAJO (single-node, carga moderada).
 # Opcional: ELASTICSEARCH_XPACK_SECURITY=true y usuario/contraseña para producción.
 # Red: docker network create ${NETWORK_NAME}
-# Uso: docker compose -f infra/services/elasticsearch.yml --env-file .env up -d
+# Uso: make infra-elasticsearch
 
 name: ${PROJECT_PREFIX:-elasticsearch}${PROJECT_PREFIX:+-elasticsearch}
 

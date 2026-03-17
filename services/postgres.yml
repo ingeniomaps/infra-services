@@ -1,7 +1,7 @@
 # PostgreSQL - Producción BAJO (mínimo viable: una instancia, carga moderada).
 # Secrets obligatorios en .env: POSTGRES_PASSWORD (y opcional POSTGRES_USER, POSTGRES_DB).
 # Red: docker network create ${NETWORK_NAME}
-# Uso: docker compose -f infra/services/postgres.yml --env-file .env up -d
+# Uso: make infra-postgres
 
 name: ${PROJECT_PREFIX:-postgres}${PROJECT_PREFIX:+-postgres}
 

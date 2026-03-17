@@ -2,7 +2,7 @@
 # Métricas: pool activo, conexiones en espera, saturación, avg query time.
 # Requiere PgBouncer en red ${NETWORK_NAME}.
 # Dashboard Grafana recomendado: ID 14022
-# Uso: docker compose -f infra/services/pgbouncer-exporter.yml --env-file .env up -d
+# Uso: incluido en make infra-full
 
 name: ${PROJECT_PREFIX:-pgbouncer-exporter}${PROJECT_PREFIX:+-pgbouncer-exporter}
 

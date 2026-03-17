@@ -2,7 +2,7 @@
 # Métricas: topics, particiones, consumer groups, lag, throughput.
 # Requiere Kafka en red ${NETWORK_NAME}.
 # Dashboard Grafana recomendado: ID 7589
-# Uso: docker compose -f infra/services/kafka-exporter.yml --env-file .env up -d
+# Uso: incluido en make infra-full
 
 name: ${PROJECT_PREFIX:-kafka-exporter}${PROJECT_PREFIX:+-kafka-exporter}
 

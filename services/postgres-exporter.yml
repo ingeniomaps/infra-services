@@ -2,7 +2,7 @@
 # Métricas: conexiones, queries, replicación, locks, tamaño de tablas.
 # Requiere PostgreSQL en red ${NETWORK_NAME}.
 # Dashboard Grafana recomendado: ID 9628
-# Uso: docker compose -f infra/services/postgres-exporter.yml --env-file .env up -d
+# Uso: incluido en make infra-full
 
 name: ${PROJECT_PREFIX:-postgres-exporter}${PROJECT_PREFIX:+-postgres-exporter}
 

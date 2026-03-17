@@ -1,6 +1,6 @@
 # Kibana - Producción BAJO. Requiere Elasticsearch en red ${NETWORK_NAME} (elasticsearch:9200).
 # Red: docker network create ${NETWORK_NAME}
-# Uso: docker compose -f infra/services/kibana.yml --env-file .env up -d
+# Uso: make infra-elasticsearch
 
 name: ${PROJECT_PREFIX:-kibana}${PROJECT_PREFIX:+-kibana}
 

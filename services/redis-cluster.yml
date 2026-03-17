@@ -2,7 +2,7 @@
 # Necesario cuando un solo Redis no puede manejar la carga (millones de sesiones activas).
 # Tras levantar, formar cluster: redis-cli -a <password> --cluster create <nodos> --cluster-replicas 0
 # Red: docker network create ${NETWORK_NAME}
-# Uso: docker compose -f infra/services/redis-cluster.yml --env-file .env up -d
+# Uso: make infra-redis-cluster
 
 name: ${PROJECT_PREFIX:-redis-cluster}${PROJECT_PREFIX:+-redis-cluster}
 

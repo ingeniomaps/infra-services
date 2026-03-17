@@ -2,7 +2,7 @@
 # Métricas: índices, shards, JVM, búsquedas/seg, ingest pipelines.
 # Requiere Elasticsearch en red ${NETWORK_NAME}.
 # Dashboard Grafana recomendado: ID 2322
-# Uso: docker compose -f infra/services/elasticsearch-exporter.yml --env-file .env up -d
+# Uso: incluido en make infra-full
 
 name: ${PROJECT_PREFIX:-elasticsearch-exporter}${PROJECT_PREFIX:+-elasticsearch-exporter}
 

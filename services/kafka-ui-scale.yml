@@ -1,7 +1,7 @@
 # Kafka UI - Producción FUERTE (kafbat fork, más recursos para clusters grandes).
 # KAFKA_BOOTSTRAP_SERVERS para scale: kafka-1:9092,kafka-2:9092,kafka-3:9092
 # Red: docker network create ${NETWORK_NAME}
-# Uso: docker compose -f infra/services/kafka-ui-scale.yml --env-file .env up -d
+# Uso: make infra-kafka-ui
 
 name: ${PROJECT_PREFIX:-kafka-ui-scale}${PROJECT_PREFIX:+-kafka-ui-scale}
 

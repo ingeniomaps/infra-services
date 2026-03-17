@@ -1,7 +1,7 @@
 # Kafka - Producción BAJO (un broker KRaft, sin Zookeeper).
 # Kafka 4.x usa KRaft nativo: no necesita Zookeeper.
 # Red: docker network create ${NETWORK_NAME}
-# Uso: docker compose -f infra/services/kafka.yml --env-file .env up -d
+# Uso: make infra-kafka
 
 name: ${PROJECT_PREFIX:-kafka}${PROJECT_PREFIX:+-kafka}
 

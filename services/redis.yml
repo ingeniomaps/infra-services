@@ -1,7 +1,7 @@
 # Redis - Producción BAJO (una instancia, carga moderada).
 # Obligatorio en .env: REDIS_PASSWORD. Opcional: REDIS_MAXMEMORY.
 # Red: docker network create ${NETWORK_NAME}
-# Uso: docker compose -f infra/services/redis.yml --env-file .env up -d
+# Uso: make infra-redis
 
 name: ${PROJECT_PREFIX:-redis}${PROJECT_PREFIX:+-redis}
 

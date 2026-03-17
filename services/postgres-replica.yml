@@ -6,7 +6,7 @@
 #   3. Configurar standby.signal en la réplica
 # En producción con millones de usuarios: usar servicio gestionado (Cloud SQL, RDS, Aurora).
 # Red: docker network create ${NETWORK_NAME}
-# Uso: docker compose -f infra/services/postgres-replica.yml --env-file .env up -d
+# Uso: make infra-postgres-replica
 
 name: ${PROJECT_PREFIX:-postgres-replica}${PROJECT_PREFIX:+-postgres-replica}
 
