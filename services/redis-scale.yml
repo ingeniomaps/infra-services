@@ -1,0 +1,15 @@
+# Redis - Override de recursos para producción FUERTE.
+# Uso: docker compose -f redis.yml -f redis-scale.yml up -d
+
+name: ${PROJECT_PREFIX:-redis}${PROJECT_PREFIX:+-redis}
+
+services:
+  redis:
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2'
+        reservations:
+          memory: 2G
+          cpus: '1'

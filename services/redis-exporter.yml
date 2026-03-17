@@ -1,0 +1,35 @@
+# Prometheus Exporter - Redis.
+# Métricas: memoria, keys, comandos/seg, latencia, clients conectados.
+# Requiere Redis en red ${NETWORK_NAME}.
+# Dashboard Grafana recomendado: ID 763
+# Uso: docker compose -f infra/services/redis-exporter.yml --env-file .env up -d
+
+name: ${PROJECT_PREFIX:-redis-exporter}${PROJECT_PREFIX:+-redis-exporter}
+
+services:
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.81.0-alpine
+    container_name: ${PROJECT_PREFIX:-redis-exporter}${PROJECT_PREFIX:+-redis-exporter}
+    environment:
+      REDIS_ADDR: redis://${REDIS_HOST:-redis}:${REDIS_PORT:-6379}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    networks:
+      - default
+    ports:
+      - '9121:9121'
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -q --spider http://localhost:9121/health || exit 1']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: '0.25'
+
+networks:
+  default:
+    name: ${NETWORK_NAME}
+    external: true

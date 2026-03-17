@@ -1,0 +1,16 @@
+# Redis Cluster - Override de recursos para producción FUERTE (6 nodos).
+# Uso: docker compose -f redis-cluster.yml -f redis-cluster-scale.yml up -d
+
+name: ${PROJECT_PREFIX:-redis-cluster}${PROJECT_PREFIX:+-redis-cluster}
+
+services:
+  redis-cluster:
+    deploy:
+      replicas: 6
+      resources:
+        limits:
+          memory: 8G
+          cpus: '2'
+        reservations:
+          memory: 4G
+          cpus: '0.5'

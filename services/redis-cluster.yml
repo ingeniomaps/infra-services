@@ -1,0 +1,52 @@
+# Redis Cluster - Distribución de sesiones/tokens entre nodos.
+# Necesario cuando un solo Redis no puede manejar la carga (millones de sesiones activas).
+# Tras levantar, formar cluster: redis-cli -a <password> --cluster create <nodos> --cluster-replicas 0
+# Red: docker network create ${NETWORK_NAME}
+# Uso: docker compose -f infra/services/redis-cluster.yml --env-file .env up -d
+
+name: ${PROJECT_PREFIX:-redis-cluster}${PROJECT_PREFIX:+-redis-cluster}
+
+services:
+  redis-cluster:
+    image: redis:8.6.1-alpine
+    environment:
+      REDIS_CLUSTER_PASSWORD: ${REDIS_CLUSTER_PASSWORD}
+    command: >
+      redis-server
+      --cluster-enabled yes
+      --cluster-config-file nodes.conf
+      --cluster-node-timeout 5000
+      --appendonly yes
+      --maxmemory ${REDIS_CLUSTER_MAXMEMORY:-2gb}
+      --maxmemory-policy allkeys-lru
+      --requirepass $$REDIS_CLUSTER_PASSWORD
+    networks:
+      - default
+    volumes:
+      - data:/data
+    healthcheck:
+      test: ['CMD-SHELL', 'redis-cli -a "$$REDIS_CLUSTER_PASSWORD" --no-auth-warning ping | grep -q PONG']
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    ports:
+      - '${REDIS_CLUSTER_PORT:-6379}:6379'
+    restart: unless-stopped
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+
+volumes:
+  data:
+    driver: local
+
+networks:
+  default:
+    name: ${NETWORK_NAME}
+    external: true
