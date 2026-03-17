@@ -1,0 +1,52 @@
+# Grafana - Producción BAJO (dashboards, un usuario admin).
+# Obligatorio en .env: GRAFANA_ADMIN_PASSWORD (y opcional GRAFANA_ADMIN_USER).
+# Red: docker network create ${NETWORK_NAME}
+# Uso: docker compose -f infra/services/grafana.yml --env-file .env up -d
+
+name: ${PROJECT_PREFIX:-grafana}${PROJECT_PREFIX:+-grafana}
+
+services:
+  grafana:
+    image: grafana/grafana:12.4.1
+    container_name: ${PROJECT_PREFIX:-grafana}${PROJECT_PREFIX:+-grafana}
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_INSTALL_PLUGINS: ${GRAFANA_PLUGINS:-}
+      GF_UNIFIED_ALERTING_ENABLED: "true"
+      GF_ALERTING_ENABLED: "false"
+      GRAFANA_SLACK_WEBHOOK_URL: ${GRAFANA_SLACK_WEBHOOK_URL:-}
+    volumes:
+      - data:/var/lib/grafana
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./grafana/provisioning/alerting:/etc/grafana/provisioning/alerting:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks:
+      - default
+    ports:
+      - '${GRAFANA_PORT:-3000}:3000'
+    healthcheck:
+      test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://localhost:3000/api/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+volumes:
+  data:
+    driver: local
+
+networks:
+  default:
+    name: ${NETWORK_NAME}
+    external: true

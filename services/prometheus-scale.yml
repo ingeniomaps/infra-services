@@ -1,0 +1,15 @@
+# Prometheus - Override de recursos para producción FUERTE.
+# Uso: docker compose -f prometheus.yml -f prometheus-scale.yml up -d
+
+name: ${PROJECT_PREFIX:-prometheus}${PROJECT_PREFIX:+-prometheus}
+
+services:
+  prometheus:
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+          cpus: '2'
+        reservations:
+          memory: 4G
+          cpus: '0.5'

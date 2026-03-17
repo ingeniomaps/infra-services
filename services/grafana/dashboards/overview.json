@@ -1,0 +1,460 @@
+{
+  "id": null,
+  "title": "Infraestructura - Estado General",
+  "description": "Panel de control con semáforos y recomendaciones para cada servicio",
+  "tags": ["overview", "infra"],
+  "timezone": "browser",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "panels": [
+    {
+      "type": "row",
+      "title": "🔴🟡🟢 Estado de Servicios",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false
+    },
+    {
+      "type": "stat",
+      "title": "PostgreSQL",
+      "description": "🟢 UP = PostgreSQL respondiendo\\n🔴 DOWN = Reiniciar con: make infra-postgres",
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "pg_up", "legendFormat": "" }],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "CAÍDO", "color": "red" }, "1": { "text": "OK", "color": "green" } } }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+        }
+      },
+      "options": { "colorMode": "background", "graphMode": "none", "textMode": "value", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "stat",
+      "title": "Redis",
+      "description": "🟢 UP = Redis respondiendo\\n🔴 DOWN = Reiniciar con: make infra-redis",
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "redis_up", "legendFormat": "" }],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "CAÍDO", "color": "red" }, "1": { "text": "OK", "color": "green" } } }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+        }
+      },
+      "options": { "colorMode": "background", "graphMode": "none", "textMode": "value", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "stat",
+      "title": "PgBouncer",
+      "description": "🟢 UP = PgBouncer respondiendo\\n🔴 DOWN = Reiniciar con: make infra-pgbouncer",
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "pgbouncer_up", "legendFormat": "" }],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "CAÍDO", "color": "red" }, "1": { "text": "OK", "color": "green" } } }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+        }
+      },
+      "options": { "colorMode": "background", "graphMode": "none", "textMode": "value", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "stat",
+      "title": "Kafka",
+      "description": "🟢 UP = Kafka respondiendo\\n🔴 DOWN = Reiniciar con: make infra-kafka",
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "kafka_brokers", "legendFormat": "" }],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "CAÍDO", "color": "red" } } }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+        }
+      },
+      "options": { "colorMode": "background", "graphMode": "none", "textMode": "value", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "stat",
+      "title": "Elasticsearch",
+      "description": "🟢 UP = Elasticsearch respondiendo\\n🔴 DOWN = Reiniciar con: make infra-elasticsearch",
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "elasticsearch_cluster_health_up", "legendFormat": "" }],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "CAÍDO", "color": "red" }, "1": { "text": "OK", "color": "green" } } }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+        }
+      },
+      "options": { "colorMode": "background", "graphMode": "none", "textMode": "value", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "stat",
+      "title": "Prometheus",
+      "description": "🟢 UP = Prometheus scrapando\\n🔴 DOWN = Si ves esto, Grafana no tiene datos",
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "up{job=\"prometheus\"}", "legendFormat": "" }],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "CAÍDO", "color": "red" }, "1": { "text": "OK", "color": "green" } } }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+        }
+      },
+      "options": { "colorMode": "background", "graphMode": "none", "textMode": "value", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "row",
+      "title": "📊 PostgreSQL - Métricas Críticas",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "collapsed": false
+    },
+    {
+      "type": "gauge",
+      "title": "Conexiones Activas",
+      "description": "Conexiones activas vs max_connections.\\n🟢 < 60%: Normal\\n🟡 60-80%: Considerar aumentar max_connections o revisar connection leaks\\n🔴 > 80%: URGENTE - PgBouncer debería absorber esto. Si ya está activo, revisar pool_size",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "(sum(pg_stat_activity_count) / pg_settings_max_connections) * 100", "legendFormat": "" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 60 }, { "color": "red", "value": 80 }] }
+        }
+      }
+    },
+    {
+      "type": "gauge",
+      "title": "Cache Hit Ratio",
+      "description": "Porcentaje de lecturas servidas desde caché.\\n🟢 > 95%: Excelente, la mayoría se sirve de RAM\\n🟡 90-95%: Aceptable, pero considerar más shared_buffers\\n🔴 < 90%: PROBLEMA - Muchas lecturas van a disco. Aumentar shared_buffers o revisar queries sin índice",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "pg_stat_database_blks_hit{datname=\"keycloak\"} / (pg_stat_database_blks_hit{datname=\"keycloak\"} + pg_stat_database_blks_read{datname=\"keycloak\"}) * 100", "legendFormat": "" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "yellow", "value": 90 }, { "color": "green", "value": 95 }] }
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Transacciones/seg",
+      "description": "Transacciones por segundo en la base keycloak.\\nNo hay umbral fijo — este número te da la referencia de carga actual.\\nSi baja abruptamente puede indicar un bloqueo o cuello de botella.",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "rate(pg_stat_database_xact_commit{datname=\"keycloak\"}[5m]) + rate(pg_stat_database_xact_rollback{datname=\"keycloak\"}[5m])", "legendFormat": "TPS" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        }
+      },
+      "options": { "colorMode": "value", "graphMode": "area", "textMode": "value_and_name", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "stat",
+      "title": "Deadlocks",
+      "description": "Deadlocks detectados (total acumulado).\\n🟢 0: Sin deadlocks\\n🔴 > 0: Hay queries compitiendo por los mismos recursos. Revisar queries lentas y locks con pg_stat_activity.",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "pg_stat_database_deadlocks{datname=\"keycloak\"}", "legendFormat": "" }],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] }
+        }
+      },
+      "options": { "colorMode": "background", "graphMode": "none", "textMode": "value", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "row",
+      "title": "📊 Redis - Métricas Críticas",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 12 },
+      "collapsed": false
+    },
+    {
+      "type": "gauge",
+      "title": "Uso de Memoria",
+      "description": "Memoria usada vs maxmemory configurado.\\n🟢 < 70%: Normal\\n🟡 70-85%: Redis empezará a evictar keys pronto\\n🔴 > 85%: URGENTE - Aumentar REDIS_MAXMEMORY en .env.redis o Redis empezará a rechazar escrituras",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 13 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "(redis_memory_used_bytes / redis_memory_max_bytes) * 100", "legendFormat": "" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 70 }, { "color": "red", "value": 85 }] }
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Keys Totales",
+      "description": "Número total de keys almacenadas.\\nSin umbral fijo — sirve como referencia. Un aumento repentino puede indicar un leak de sesiones.",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 13 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "redis_db_keys{db=\"db0\"}", "legendFormat": "" }],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        }
+      },
+      "options": { "colorMode": "value", "graphMode": "area", "textMode": "value", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "stat",
+      "title": "Comandos/seg",
+      "description": "Operaciones por segundo que Redis procesa.\\nSin umbral fijo — referencia de carga. Redis puede manejar 100K+ ops/seg.",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 13 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "rate(redis_commands_processed_total[5m])", "legendFormat": "" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        }
+      },
+      "options": { "colorMode": "value", "graphMode": "area", "textMode": "value", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "stat",
+      "title": "Keys Evictadas",
+      "description": "Keys eliminadas por falta de memoria (rate/min).\\n🟢 0: Redis tiene suficiente memoria\\n🟡 > 0: Redis está eliminando keys para hacer espacio\\n🔴 Alto: URGENTE - Aumentar REDIS_MAXMEMORY, sesiones de usuarios se están perdiendo",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 13 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "rate(redis_evicted_keys_total[5m]) * 60", "legendFormat": "" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 1 }, { "color": "red", "value": 100 }] }
+        }
+      },
+      "options": { "colorMode": "background", "graphMode": "none", "textMode": "value", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "row",
+      "title": "📊 PgBouncer - Métricas Críticas",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 19 },
+      "collapsed": false
+    },
+    {
+      "type": "gauge",
+      "title": "Uso del Pool",
+      "description": "Conexiones activas del pool vs máximo configurado.\\n🟢 < 60%: Normal\\n🟡 60-80%: El pool se está llenando. Revisar si hay queries lentas manteniendo conexiones\\n🔴 > 80%: URGENTE - Aumentar PGBOUNCER_DEFAULT_POOL_SIZE en .env.postgres o las conexiones se van a encolar",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "(sum(pgbouncer_pools_server_active_connections) / sum(pgbouncer_pools_server_active_connections + pgbouncer_pools_server_idle_connections)) * 100", "legendFormat": "" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 60 }, { "color": "red", "value": 80 }] }
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Clientes en Espera",
+      "description": "Clientes esperando una conexión libre del pool.\\n🟢 0: Todas las peticiones se atienden inmediatamente\\n🟡 1-10: Hay cola, pero es tolerable\\n🔴 > 10: URGENTE - Los usuarios están esperando. Aumentar pool_size o revisar queries lentas",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "sum(pgbouncer_pools_client_waiting_connections)", "legendFormat": "" }],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 1 }, { "color": "red", "value": 10 }] }
+        }
+      },
+      "options": { "colorMode": "background", "graphMode": "area", "textMode": "value", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "stat",
+      "title": "Queries/seg (via pool)",
+      "description": "Queries por segundo que pasan por PgBouncer.\\nReferencia de carga — compara con las TPS de PostgreSQL para ver si todo pasa por el pool.",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "sum(rate(pgbouncer_stats_queries_total[5m]))", "legendFormat": "" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        }
+      },
+      "options": { "colorMode": "value", "graphMode": "area", "textMode": "value", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "row",
+      "title": "📊 Elasticsearch - Métricas Críticas",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 26 },
+      "collapsed": false
+    },
+    {
+      "type": "stat",
+      "title": "Cluster Health",
+      "description": "Estado del cluster de Elasticsearch.\\n🟢 green: Todos los shards asignados\\n🟡 yellow: Réplicas sin asignar (funciona pero sin redundancia)\\n🔴 red: Shards primarios sin asignar — hay datos inaccesibles",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 27 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        { "expr": "elasticsearch_cluster_health_status{color=\"green\"}", "legendFormat": "green" },
+        { "expr": "elasticsearch_cluster_health_status{color=\"yellow\"}", "legendFormat": "yellow" },
+        { "expr": "elasticsearch_cluster_health_status{color=\"red\"}", "legendFormat": "red" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "1": { "text": "ACTIVO" }, "0": { "text": "" } } }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        }
+      },
+      "options": { "colorMode": "background", "graphMode": "none", "textMode": "value_and_name", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "gauge",
+      "title": "JVM Heap Usado",
+      "description": "Memoria JVM usada por Elasticsearch.\\n🟢 < 70%: Normal\\n🟡 70-85%: GC frecuente, puede haber pausas\\n🔴 > 85%: URGENTE - Aumentar ELASTICSEARCH_JAVA_OPTS en .env.elasticsearch (-Xmx) o ES se va a crashear con OOM",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 27 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "(elasticsearch_jvm_memory_used_bytes{area=\"heap\"} / elasticsearch_jvm_memory_max_bytes{area=\"heap\"}) * 100", "legendFormat": "" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 70 }, { "color": "red", "value": 85 }] }
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Documentos Totales",
+      "description": "Número total de documentos indexados.\\nReferencia — un crecimiento descontrolado puede indicar que no hay retention policy en los índices.",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 27 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "elasticsearch_indices_docs_total", "legendFormat": "" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        }
+      },
+      "options": { "colorMode": "value", "graphMode": "area", "textMode": "value", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "stat",
+      "title": "Búsquedas/seg",
+      "description": "Rate de búsquedas por segundo.\\nReferencia de carga — picos pueden indicar un scraping o uso inusual.",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 27 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "rate(elasticsearch_indices_search_query_total[5m])", "legendFormat": "" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        }
+      },
+      "options": { "colorMode": "value", "graphMode": "area", "textMode": "value", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "row",
+      "title": "📊 Kafka - Métricas Críticas",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 33 },
+      "collapsed": false
+    },
+    {
+      "type": "stat",
+      "title": "Brokers Activos",
+      "description": "Número de brokers Kafka online.\\n🟢 Esperado: 1 (dev) o 3 (scale)\\n🔴 0: Kafka caído. Reiniciar con: make infra-kafka",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 34 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "kafka_brokers", "legendFormat": "" }],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+        }
+      },
+      "options": { "colorMode": "background", "graphMode": "none", "textMode": "value", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "stat",
+      "title": "Consumer Lag Total",
+      "description": "Mensajes pendientes de procesar por los consumers.\\n🟢 0-100: Normal, los consumers están al día\\n🟡 100-1000: Retraso — los consumers no procesan tan rápido como llegan los mensajes\\n🔴 > 1000: URGENTE - Escalar consumers o revisar si alguno está caído",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 34 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "sum(kafka_consumergroup_lag)", "legendFormat": "" }],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 100 }, { "color": "red", "value": 1000 }] }
+        }
+      },
+      "options": { "colorMode": "background", "graphMode": "area", "textMode": "value", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "stat",
+      "title": "Topics",
+      "description": "Número de topics en el cluster.\\nReferencia — si crece inesperadamente puede indicar que algún servicio está creando topics automáticamente.",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 34 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "count(kafka_topic_partitions)", "legendFormat": "" }],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        }
+      },
+      "options": { "colorMode": "value", "graphMode": "none", "textMode": "value", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "stat",
+      "title": "Mensajes/seg",
+      "description": "Rate de mensajes entrantes por segundo en todos los topics.\\nReferencia de throughput — útil para dimensionar el cluster.",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 34 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "sum(rate(kafka_topic_partition_current_offset[5m]))", "legendFormat": "" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        }
+      },
+      "options": { "colorMode": "value", "graphMode": "area", "textMode": "value", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "row",
+      "title": "📋 Guía de Acción Rápida",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 40 },
+      "collapsed": false
+    },
+    {
+      "type": "text",
+      "title": "",
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 41 },
+      "options": {
+        "mode": "markdown",
+        "content": "## Qué hacer cuando algo está en rojo\n\n| Problema | Causa probable | Acción inmediata | Acción a largo plazo |\n|----------|---------------|-------------------|---------------------|\n| **PostgreSQL CAÍDO** | Contenedor crasheó, OOM | `make infra-postgres` | Aumentar memory en .env o scale |\n| **Conexiones PG > 80%** | Connection leak o carga alta | Verificar que PgBouncer esté activo | Aumentar `max_connections` en PG config |\n| **Cache Hit < 90%** | Poca RAM para caché | Revisar queries sin índice | Aumentar `shared_buffers` |\n| **Deadlocks > 0** | Queries compitiendo | Revisar `pg_stat_activity` | Optimizar orden de locks en el código |\n| **Redis memoria > 85%** | Muchas sesiones/tokens | `REDIS_MAXMEMORY` en `.env.redis` | Migrar a Redis Cluster |\n| **Keys evictadas** | maxmemory alcanzado | Aumentar `REDIS_MAXMEMORY` | Revisar TTL de sesiones en Keycloak |\n| **PgBouncer clientes en espera** | Pool saturado | `PGBOUNCER_DEFAULT_POOL_SIZE` en `.env.postgres` | Revisar queries lentas |\n| **ES JVM Heap > 85%** | Muchos índices/búsquedas | `ELASTICSEARCH_JAVA_OPTS` en `.env.elasticsearch` | Implementar ILM (index lifecycle) |\n| **ES Cluster yellow** | Réplica sin asignar | Normal en single-node | Agregar nodo en producción |\n| **ES Cluster red** | Shard primario perdido | Revisar logs del contenedor | Restaurar desde snapshot |\n| **Kafka brokers = 0** | Contenedor caído | `make infra-kafka` | Revisar logs, memory limits |\n| **Consumer lag > 1000** | Consumers lentos o caídos | Verificar que consumers estén corriendo | Escalar consumers o particiones |\n\n## Comandos útiles\n```\nmake infra-status          # Ver estado de todos los servicios\nmake infra-full            # Levantar todo\nmake infra-down            # Detener todo\ndocker logs <container>    # Ver logs de un servicio específico\n```"
+      }
+    }
+  ],
+  "templating": { "list": [] },
+  "annotations": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" }
+}

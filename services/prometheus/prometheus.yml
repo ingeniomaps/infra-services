@@ -1,0 +1,36 @@
+# Prometheus - Configuración de scraping.
+# Añadir/quitar scrape_configs según los servicios que estén corriendo.
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Prometheus (auto-monitoreo)
+  - job_name: prometheus
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # PostgreSQL (vía postgres-exporter)
+  - job_name: postgresql
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+
+  # Redis (vía redis-exporter)
+  - job_name: redis
+    static_configs:
+      - targets: ['redis-exporter:9121']
+
+  # PgBouncer (vía pgbouncer-exporter)
+  - job_name: pgbouncer
+    static_configs:
+      - targets: ['pgbouncer-exporter:9127']
+
+  # Kafka (vía kafka-exporter)
+  - job_name: kafka
+    static_configs:
+      - targets: ['kafka-exporter:9308']
+
+  # Elasticsearch (vía elasticsearch-exporter)
+  - job_name: elasticsearch
+    static_configs:
+      - targets: ['elasticsearch-exporter:9114']

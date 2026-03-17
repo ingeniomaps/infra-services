@@ -1,0 +1,47 @@
+# Prometheus - Métricas y alertas.
+# Config: infra/services/prometheus/prometheus.yml (añadir scrape_configs para tus servicios).
+# Red: docker network create ${NETWORK_NAME}
+# Uso: docker compose -f infra/services/prometheus.yml --env-file .env up -d
+
+name: ${PROJECT_PREFIX:-prometheus}${PROJECT_PREFIX:+-prometheus}
+
+services:
+  prometheus:
+    image: prom/prometheus:v3.10.0
+    container_name: ${PROJECT_PREFIX:-prometheus}${PROJECT_PREFIX:+-prometheus}
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=${PROMETHEUS_RETENTION_TIME:-15d}'
+      - '--storage.tsdb.retention.size=${PROMETHEUS_RETENTION_SIZE:-10GB}'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - data:/prometheus
+    networks:
+      - default
+    ports:
+      - '${PROMETHEUS_PORT:-9090}:9090'
+    healthcheck:
+      test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://localhost:9090/-/healthy']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+volumes:
+  data:
+    driver: local
+
+networks:
+  default:
+    name: ${NETWORK_NAME}
+    external: true

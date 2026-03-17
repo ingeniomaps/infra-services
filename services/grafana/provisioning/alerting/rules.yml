@@ -1,0 +1,230 @@
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: Infraestructura Crítica
+    folder: Infrastructure
+    interval: 1m
+    rules:
+      # ============================================
+      # SERVICIOS CAÍDOS
+      # ============================================
+      - uid: pg-down
+        title: PostgreSQL caído
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              expr: pg_up
+              refId: A
+          - refId: C
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: lt, params: [1] }
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: PostgreSQL no responde
+          description: El exporter de PostgreSQL no puede conectarse a la base de datos.
+          action: "Ejecutar: make infra-postgres"
+
+      - uid: redis-down
+        title: Redis caído
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              expr: redis_up
+              refId: A
+          - refId: C
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: lt, params: [1] }
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: Redis no responde
+          description: El exporter de Redis no puede conectarse.
+          action: "Ejecutar: make infra-redis"
+
+      # ============================================
+      # POSTGRESQL
+      # ============================================
+      - uid: pg-connections-high
+        title: "PostgreSQL: conexiones > 80%"
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              expr: (sum(pg_stat_activity_count) / pg_settings_max_connections) * 100
+              refId: A
+          - refId: C
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [80] }
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL tiene {{ $values.A }}% de conexiones usadas"
+          description: El pool de conexiones se está agotando.
+          action: Verificar que PgBouncer esté activo. Si ya lo está, aumentar PGBOUNCER_DEFAULT_POOL_SIZE.
+
+      - uid: pg-cache-low
+        title: "PostgreSQL: cache hit < 90%"
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              expr: pg_stat_database_blks_hit{datname="keycloak"} / (pg_stat_database_blks_hit{datname="keycloak"} + pg_stat_database_blks_read{datname="keycloak"}) * 100
+              refId: A
+          - refId: C
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: lt, params: [90] }
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Cache hit ratio es {{ $values.A }}%"
+          description: Demasiadas lecturas van a disco en vez de caché.
+          action: Revisar queries sin índice. Considerar aumentar shared_buffers.
+
+      # ============================================
+      # REDIS
+      # ============================================
+      - uid: redis-memory-high
+        title: "Redis: memoria > 85%"
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              expr: (redis_memory_used_bytes / redis_memory_max_bytes) * 100
+              refId: A
+          - refId: C
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [85] }
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis usa {{ $values.A }}% de memoria"
+          description: Redis está cerca del límite. Empezará a evictar keys o rechazar escrituras.
+          action: Aumentar REDIS_MAXMEMORY en .env.redis. Revisar TTL de sesiones en Keycloak.
+
+      - uid: redis-evictions
+        title: "Redis: keys siendo evictadas"
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              expr: rate(redis_evicted_keys_total[5m]) * 60
+              refId: A
+          - refId: C
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [10] }
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis evictando {{ $values.A }} keys/min"
+          description: Redis no tiene suficiente memoria y está eliminando keys activamente.
+          action: Aumentar REDIS_MAXMEMORY. Sesiones de usuarios pueden estarse perdiendo.
+
+      # ============================================
+      # PGBOUNCER
+      # ============================================
+      - uid: pgbouncer-waiting
+        title: "PgBouncer: clientes en espera"
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              expr: sum(pgbouncer_pools_client_waiting_connections)
+              refId: A
+          - refId: C
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [10] }
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $values.A }} clientes esperando conexión en PgBouncer"
+          description: El pool de conexiones está saturado. Usuarios experimentan latencia.
+          action: Aumentar PGBOUNCER_DEFAULT_POOL_SIZE en .env.postgres. Revisar queries lentas.
+
+      # ============================================
+      # ELASTICSEARCH
+      # ============================================
+      - uid: es-heap-high
+        title: "Elasticsearch: JVM heap > 85%"
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              expr: (elasticsearch_jvm_memory_used_bytes{area="heap"} / elasticsearch_jvm_memory_max_bytes{area="heap"}) * 100
+              refId: A
+          - refId: C
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [85] }
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Elasticsearch heap al {{ $values.A }}%"
+          description: Riesgo de OOM. GC frecuente puede causar pausas.
+          action: Aumentar ELASTICSEARCH_JAVA_OPTS (-Xmx) en .env.elasticsearch.

@@ -1,0 +1,274 @@
+{
+  "id": null,
+  "title": "Keycloak - Métricas de Negocio",
+  "description": "Logins, registros, sesiones activas y errores de autenticación",
+  "tags": ["keycloak", "business"],
+  "timezone": "browser",
+  "editable": true,
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "panels": [
+    {
+      "type": "row",
+      "title": "📊 Autenticación",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false
+    },
+    {
+      "type": "stat",
+      "title": "Logins Exitosos / min",
+      "description": "Rate de logins exitosos por minuto. Referencia de actividad de usuarios.",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "sum(rate(keycloak_login_total[5m])) * 60", "legendFormat": "logins/min" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        }
+      },
+      "options": { "colorMode": "value", "graphMode": "area", "textMode": "value_and_name", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "stat",
+      "title": "Logins Fallidos / min",
+      "description": "Rate de logins fallidos. Un pico puede indicar un ataque de fuerza bruta.\n🟢 < 5/min: Normal\n🟡 5-20/min: Revisar IPs\n🔴 > 20/min: Posible ataque",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "sum(rate(keycloak_login_errors_total[5m])) * 60", "legendFormat": "errores/min" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 5 }, { "color": "red", "value": 20 }] }
+        }
+      },
+      "options": { "colorMode": "background", "graphMode": "area", "textMode": "value_and_name", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "gauge",
+      "title": "Tasa de Éxito de Login",
+      "description": "Porcentaje de logins exitosos vs total.\n🟢 > 95%: Normal\n🟡 90-95%: Revisar si hay problemas de UX\n🔴 < 90%: Algo está mal (passwords olvidadas, MFA fallando, ataque)",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "sum(rate(keycloak_login_total[5m])) / (sum(rate(keycloak_login_total[5m])) + sum(rate(keycloak_login_errors_total[5m]))) * 100", "legendFormat": "" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "yellow", "value": 90 }, { "color": "green", "value": 95 }] }
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Registros / min",
+      "description": "Rate de nuevos registros de usuarios por minuto.",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "sum(rate(keycloak_registrations_total[5m])) * 60", "legendFormat": "registros/min" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        }
+      },
+      "options": { "colorMode": "value", "graphMode": "area", "textMode": "value_and_name", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "row",
+      "title": "📊 Sesiones y Tokens",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 7 },
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "Logins vs Errores (últimas 24h)",
+      "description": "Comparación visual de logins exitosos vs fallidos en el tiempo.",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        { "expr": "sum(rate(keycloak_login_total[5m])) * 60", "legendFormat": "Logins exitosos/min" },
+        { "expr": "sum(rate(keycloak_login_errors_total[5m])) * 60", "legendFormat": "Logins fallidos/min" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 20 }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Logins fallidos/min" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Logins exitosos/min" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] }
+        ]
+      },
+      "options": { "tooltip": { "mode": "multi" } }
+    },
+    {
+      "type": "timeseries",
+      "title": "Registros (últimas 24h)",
+      "description": "Nuevos registros de usuarios en el tiempo.",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        { "expr": "sum(rate(keycloak_registrations_total[5m])) * 60", "legendFormat": "Registros/min" },
+        { "expr": "sum(rate(keycloak_registrations_errors_total[5m])) * 60", "legendFormat": "Registros fallidos/min" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 20 }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Registros fallidos/min" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Registros/min" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] }
+        ]
+      },
+      "options": { "tooltip": { "mode": "multi" } }
+    },
+    {
+      "type": "row",
+      "title": "📊 Rendimiento de Keycloak",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 16 },
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "Tiempo de Respuesta (p50, p95, p99)",
+      "description": "Latencia de las peticiones HTTP de Keycloak.\n🟢 p95 < 500ms: Bueno\n🟡 p95 500ms-2s: Lento\n🔴 p95 > 2s: Problema de rendimiento",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(keycloak_request_duration_bucket[5m])) by (le))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, sum(rate(keycloak_request_duration_bucket[5m])) by (le))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, sum(rate(keycloak_request_duration_bucket[5m])) by (le))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 }
+        }
+      },
+      "options": { "tooltip": { "mode": "multi" } }
+    },
+    {
+      "type": "timeseries",
+      "title": "Requests HTTP por Código de Estado",
+      "description": "Distribución de respuestas HTTP. Un aumento en 5xx indica errores del servidor.",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        { "expr": "sum(rate(keycloak_request_duration_count{status=~\"2..\"}[5m])) * 60", "legendFormat": "2xx" },
+        { "expr": "sum(rate(keycloak_request_duration_count{status=~\"3..\"}[5m])) * 60", "legendFormat": "3xx" },
+        { "expr": "sum(rate(keycloak_request_duration_count{status=~\"4..\"}[5m])) * 60", "legendFormat": "4xx" },
+        { "expr": "sum(rate(keycloak_request_duration_count{status=~\"5..\"}[5m])) * 60", "legendFormat": "5xx" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqpm",
+          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 20, "stacking": { "mode": "normal" } }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "2xx" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "4xx" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "5xx" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      },
+      "options": { "tooltip": { "mode": "multi" } }
+    },
+    {
+      "type": "row",
+      "title": "📊 Métricas de Negocio",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 25 },
+      "collapsed": false
+    },
+    {
+      "type": "stat",
+      "title": "Usuarios Activos (24h)",
+      "description": "Estimación de usuarios únicos que hicieron login en las últimas 24h.\nSe calcula como el total de logins exitosos en 24h.\nPara DAU real se necesita contar usuarios únicos (requiere query a DB).",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "sum(increase(keycloak_login_total[24h]))", "legendFormat": "logins 24h" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        }
+      },
+      "options": { "colorMode": "value", "graphMode": "area", "textMode": "value_and_name", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "stat",
+      "title": "Nuevos Registros (24h)",
+      "description": "Total de nuevos registros en las últimas 24 horas.",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "sum(increase(keycloak_registrations_total[24h]))", "legendFormat": "registros 24h" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] }
+        }
+      },
+      "options": { "colorMode": "value", "graphMode": "area", "textMode": "value_and_name", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "gauge",
+      "title": "Conversión Registro → Login",
+      "description": "Ratio entre registros y primer login exitoso.\n🟢 > 80%: Buena conversión\n🟡 50-80%: Revisar proceso de verificación de email\n🔴 < 50%: Problema en el onboarding — muchos se registran pero no activan",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "sum(rate(keycloak_login_total[24h])) / (sum(rate(keycloak_login_total[24h])) + sum(rate(keycloak_registrations_total[24h]))) * 100", "legendFormat": "" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "yellow", "value": 50 }, { "color": "green", "value": 80 }] }
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Logouts (24h)",
+      "description": "Total de logouts en 24h. La diferencia entre logins y logouts indica sesiones activas.\nSi los logouts son mucho menores que los logins, los usuarios dejan las sesiones abiertas (normal en apps web).",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{ "expr": "sum(increase(keycloak_logout_total[24h]))", "legendFormat": "logouts 24h" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "orange", "value": null }] }
+        }
+      },
+      "options": { "colorMode": "value", "graphMode": "area", "textMode": "value_and_name", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "timeseries",
+      "title": "Actividad diaria (7 días)",
+      "description": "Tendencia de logins, registros y logouts por día para ver patrones de uso.",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 32 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [
+        { "expr": "sum(increase(keycloak_login_total[1d]))", "legendFormat": "Logins", "interval": "1d" },
+        { "expr": "sum(increase(keycloak_registrations_total[1d]))", "legendFormat": "Registros", "interval": "1d" },
+        { "expr": "sum(increase(keycloak_login_errors_total[1d]))", "legendFormat": "Login fallidos", "interval": "1d" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "drawStyle": "bars", "lineWidth": 0, "fillOpacity": 80, "barAlignment": 0 }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Logins" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Registros" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Login fallidos" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      },
+      "options": { "tooltip": { "mode": "multi" } },
+      "timeFrom": "7d"
+    }
+  ],
+  "templating": { "list": [] },
+  "annotations": { "list": [] },
+  "time": { "from": "now-24h", "to": "now" }
+}
