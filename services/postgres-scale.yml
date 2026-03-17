@@ -1,0 +1,15 @@
+# PostgreSQL - Override de recursos para producción FUERTE.
+# Uso: docker compose -f postgres.yml -f postgres-scale.yml up -d
+
+name: ${PROJECT_PREFIX:-postgres}${PROJECT_PREFIX:+-postgres}
+
+services:
+  postgres:
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+          cpus: '4'
+        reservations:
+          memory: 4G
+          cpus: '2'

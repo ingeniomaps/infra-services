@@ -1,0 +1,48 @@
+# PostgreSQL Réplica - Read replica para distribución de lectura.
+# La imagen oficial de PostgreSQL NO configura replicación automáticamente.
+# Pasos para activar streaming replication:
+#   1. En el primary: configurar wal_level=replica, crear usuario de replicación, actualizar pg_hba.conf
+#   2. Ejecutar pg_basebackup desde la réplica al primary
+#   3. Configurar standby.signal en la réplica
+# En producción con millones de usuarios: usar servicio gestionado (Cloud SQL, RDS, Aurora).
+# Red: docker network create ${NETWORK_NAME}
+# Uso: docker compose -f infra/services/postgres-replica.yml --env-file .env up -d
+
+name: ${PROJECT_PREFIX:-postgres-replica}${PROJECT_PREFIX:+-postgres-replica}
+
+services:
+  postgres-replica:
+    image: postgres:18.3-alpine
+    container_name: ${PROJECT_PREFIX:-postgres-replica}${PROJECT_PREFIX:+-postgres-replica}
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_INITDB_ARGS: '-E UTF8'
+    volumes:
+      - data:/var/lib/postgresql/data
+    networks:
+      - default
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$$POSTGRES_USER"']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+
+volumes:
+  data:
+    driver: local
+
+networks:
+  default:
+    name: ${NETWORK_NAME}
+    external: true

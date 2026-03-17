@@ -1,0 +1,15 @@
+# PgBouncer - Override de recursos para producción FUERTE.
+# Uso: docker compose -f pgbouncer.yml -f pgbouncer-scale.yml up -d
+
+name: ${PROJECT_PREFIX:-pgbouncer}${PROJECT_PREFIX:+-pgbouncer}
+
+services:
+  pgbouncer:
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '2'
+        reservations:
+          memory: 512M
+          cpus: '0.5'

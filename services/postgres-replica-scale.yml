@@ -1,0 +1,15 @@
+# PostgreSQL Réplica - Override de recursos para producción FUERTE.
+# Uso: docker compose -f postgres-replica.yml -f postgres-replica-scale.yml up -d
+
+name: ${PROJECT_PREFIX:-postgres-replica}${PROJECT_PREFIX:+-postgres-replica}
+
+services:
+  postgres-replica:
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+          cpus: '4'
+        reservations:
+          memory: 4G
+          cpus: '2'

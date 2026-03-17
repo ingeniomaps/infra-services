@@ -1,0 +1,46 @@
+# PgBouncer - Connection pooling para PostgreSQL (edoburu, PgBouncer 1.25.1).
+# Requiere PostgreSQL en red ${NETWORK_NAME}. Variables en .env.postgres.
+# Red: docker network create ${NETWORK_NAME}
+# Uso: docker compose -f infra/services/pgbouncer.yml --env-file .env up -d
+
+name: ${PROJECT_PREFIX:-pgbouncer}${PROJECT_PREFIX:+-pgbouncer}
+
+services:
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    container_name: ${PROJECT_PREFIX:-pgbouncer}${PROJECT_PREFIX:+-pgbouncer}
+    environment:
+      DB_HOST: ${POSTGRES_HOST:-postgres}
+      DB_PORT: ${POSTGRES_PORT:-5432}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: ${POSTGRES_DB}
+      POOL_MODE: ${PGBOUNCER_POOL_MODE:-session}
+      MAX_CLIENT_CONN: ${PGBOUNCER_MAX_CLIENT_CONN:-1000}
+      DEFAULT_POOL_SIZE: ${PGBOUNCER_DEFAULT_POOL_SIZE:-25}
+      MIN_POOL_SIZE: ${PGBOUNCER_MIN_POOL_SIZE:-10}
+      RESERVE_POOL_SIZE: 5
+      RESERVE_POOL_TIMEOUT: 3
+      IGNORE_STARTUP_PARAMETERS: extra_float_digits
+      AUTH_TYPE: ${PGBOUNCER_AUTH_TYPE:-scram-sha-256}
+      LISTEN_PORT: 6432
+    networks:
+      - default
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -h localhost -p 6432 || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - '${PGBOUNCER_PORT:-6432}:6432'
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+
+networks:
+  default:
+    name: ${NETWORK_NAME}
+    external: true
