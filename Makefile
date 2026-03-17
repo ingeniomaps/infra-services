@@ -12,7 +12,7 @@
 
 # Rutas configurables (el proyecto las define antes del include)
 INFRA_ROOT     ?= .infra
-INFRA_ENVS     ?= infra/envs
+INFRA_ENVS     ?= envs
 INFRA_SERVICES  = $(INFRA_ROOT)/services
 INFRA_BASE      = docker compose --env-file .env --env-file $(INFRA_ENVS)/.env.network
 

@@ -1,3 +1,11 @@
 # Env values (solo templates .example se trackean)
 envs/
 !envs/*.example
+
+# OS / Editor
+.DS_Store
+*.log
+*.swp
+*~
+.idea/
+.vscode/
