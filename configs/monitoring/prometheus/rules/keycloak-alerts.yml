@@ -1,0 +1,109 @@
+groups:
+  - name: keycloak
+    interval: 30s
+    rules:
+      # High error rate
+      - alert: KeycloakHighErrorRate
+        expr: rate(keycloak_http_requests_total{status=~"5.."}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Keycloak high error rate"
+          description: "Keycloak error rate is {{ $value }} errors/sec"
+
+      # High response time
+      - alert: KeycloakHighResponseTime
+        expr: histogram_quantile(0.95, rate(keycloak_http_request_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Keycloak high response time"
+          description: "Keycloak 95th percentile response time is {{ $value }}s"
+
+      # Database connection pool exhaustion
+      - alert: KeycloakDatabasePoolExhausted
+        expr: keycloak_database_pool_active_connections / keycloak_database_pool_max_connections > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Keycloak database pool nearly exhausted"
+          description: "Database connection pool is {{ $value | humanizePercentage }} full"
+
+      # High memory usage
+      - alert: KeycloakHighMemoryUsage
+        expr: (jvm_memory_used_bytes{area="heap"} / jvm_memory_max_bytes{area="heap"}) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Keycloak high memory usage"
+          description: "Keycloak memory usage is {{ $value | humanizePercentage }}"
+
+      # Failed login attempts
+      - alert: KeycloakHighFailedLogins
+        expr: rate(keycloak_login_errors_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Keycloak high failed login attempts"
+          description: "{{ $value }} failed login attempts per second"
+
+  - name: postgres
+    interval: 30s
+    rules:
+      # Database connection issues
+      - alert: PostgreSQLTooManyConnections
+        expr: pg_stat_database_numbackends / pg_settings_max_connections > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL too many connections"
+          description: "PostgreSQL has {{ $value | humanizePercentage }} of max connections"
+
+      # Database replication lag
+      - alert: PostgreSQLReplicationLag
+        expr: pg_replication_lag > 30
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL replication lag"
+          description: "PostgreSQL replication lag is {{ $value }}s"
+
+  - name: system
+    interval: 30s
+    rules:
+      # High CPU usage
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is {{ $value }}%"
+
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value }}%"
+
+      # Disk space low
+      - alert: LowDiskSpace
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 10
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Low disk space"
+          description: "Disk space is {{ $value }}% available"

@@ -1,0 +1,170 @@
+# AWS Route53 configuration for geo-routing and failover
+# This is a reference configuration - apply using AWS CLI or Terraform
+
+Resources:
+  # Health check for US East region
+  HealthCheckUSEast:
+    Type: AWS::Route53::HealthCheck
+    Properties:
+      HealthCheckConfig:
+        Type: HTTPS
+        ResourcePath: /health/ready
+        FullyQualifiedDomainName: keycloak-use1.example.com
+        Port: 443
+        RequestInterval: 30
+        FailureThreshold: 3
+        Regions:
+          - us-east-1
+          - us-west-2
+          - eu-west-1
+
+  # Health check for EU West region
+  HealthCheckEUWest:
+    Type: AWS::Route53::HealthCheck
+    Properties:
+      HealthCheckConfig:
+        Type: HTTPS
+        ResourcePath: /health/ready
+        FullyQualifiedDomainName: keycloak-euw1.example.com
+        Port: 443
+        RequestInterval: 30
+        FailureThreshold: 3
+        Regions:
+          - eu-west-1
+          - eu-central-1
+          - us-east-1
+
+  # Health check for AP Southeast region
+  HealthCheckAPSoutheast:
+    Type: AWS::Route53::HealthCheck
+    Properties:
+      HealthCheckConfig:
+        Type: HTTPS
+        ResourcePath: /health/ready
+        FullyQualifiedDomainName: keycloak-apse1.example.com
+        Port: 443
+        RequestInterval: 30
+        FailureThreshold: 3
+        Regions:
+          - ap-southeast-1
+          - ap-northeast-1
+          - us-west-2
+
+  # Primary hosted zone
+  KeycloakHostedZone:
+    Type: AWS::Route53::HostedZone
+    Properties:
+      Name: keycloak.example.com
+      HostedZoneConfig:
+        Comment: Keycloak multi-region deployment
+
+  # Geo-routing record set
+  GeoRoutingRecordSet:
+    Type: AWS::Route53::RecordSetGroup
+    Properties:
+      HostedZoneId: !Ref KeycloakHostedZone
+      RecordSets:
+        # US East - Primary for North America
+        - Name: keycloak.example.com
+          Type: A
+          SetIdentifier: us-east-primary
+          GeoLocation:
+            ContinentCode: NA
+          AliasTarget:
+            DNSName: keycloak-use1.example.com
+            HostedZoneId: !GetAtt ALBUSEast.CanonicalHostedZoneID
+            EvaluateTargetHealth: true
+          Failover: PRIMARY
+          HealthCheckId: !Ref HealthCheckUSEast
+
+        # EU West - Primary for Europe
+        - Name: keycloak.example.com
+          Type: A
+          SetIdentifier: eu-west-primary
+          GeoLocation:
+            ContinentCode: EU
+          AliasTarget:
+            DNSName: keycloak-euw1.example.com
+            HostedZoneId: !GetAtt ALBEUWest.CanonicalHostedZoneID
+            EvaluateTargetHealth: true
+          Failover: PRIMARY
+          HealthCheckId: !Ref HealthCheckEUWest
+
+        # AP Southeast - Primary for Asia
+        - Name: keycloak.example.com
+          Type: A
+          SetIdentifier: ap-southeast-primary
+          GeoLocation:
+            ContinentCode: AS
+          AliasTarget:
+            DNSName: keycloak-apse1.example.com
+            HostedZoneId: !GetAtt ALBAPSoutheast.CanonicalHostedZoneID
+            EvaluateTargetHealth: true
+          Failover: PRIMARY
+          HealthCheckId: !Ref HealthCheckAPSoutheast
+
+        # Failover - US East as backup
+        - Name: keycloak.example.com
+          Type: A
+          SetIdentifier: us-east-failover
+          AliasTarget:
+            DNSName: keycloak-use1.example.com
+            HostedZoneId: !GetAtt ALBUSEast.CanonicalHostedZoneID
+            EvaluateTargetHealth: true
+          Failover: SECONDARY
+          HealthCheckId: !Ref HealthCheckUSEast
+
+        # Failover - EU West as backup
+        - Name: keycloak.example.com
+          Type: A
+          SetIdentifier: eu-west-failover
+          AliasTarget:
+            DNSName: keycloak-euw1.example.com
+            HostedZoneId: !GetAtt ALBEUWest.CanonicalHostedZoneID
+            EvaluateTargetHealth: true
+          Failover: SECONDARY
+          HealthCheckId: !Ref HealthCheckEUWest
+
+        # Failover - AP Southeast as backup
+        - Name: keycloak.example.com
+          Type: A
+          SetIdentifier: ap-southeast-failover
+          AliasTarget:
+            DNSName: keycloak-apse1.example.com
+            HostedZoneId: !GetAtt ALBAPSoutheast.CanonicalHostedZoneID
+            EvaluateTargetHealth: true
+          Failover: SECONDARY
+          HealthCheckId: !Ref HealthCheckAPSoutheast
+
+  # Latency-based routing (alternative to geo-routing)
+  LatencyRecordSet:
+    Type: AWS::Route53::RecordSetGroup
+    Properties:
+      HostedZoneId: !Ref KeycloakHostedZone
+      RecordSets:
+        - Name: keycloak-latency.example.com
+          Type: A
+          SetIdentifier: us-east-latency
+          Region: us-east-1
+          AliasTarget:
+            DNSName: keycloak-use1.example.com
+            HostedZoneId: !GetAtt ALBUSEast.CanonicalHostedZoneID
+            EvaluateTargetHealth: true
+
+        - Name: keycloak-latency.example.com
+          Type: A
+          SetIdentifier: eu-west-latency
+          Region: eu-west-1
+          AliasTarget:
+            DNSName: keycloak-euw1.example.com
+            HostedZoneId: !GetAtt ALBEUWest.CanonicalHostedZoneID
+            EvaluateTargetHealth: true
+
+        - Name: keycloak-latency.example.com
+          Type: A
+          SetIdentifier: ap-southeast-latency
+          Region: ap-southeast-1
+          AliasTarget:
+            DNSName: keycloak-apse1.example.com
+            HostedZoneId: !GetAtt ALBAPSoutheast.CanonicalHostedZoneID
+            EvaluateTargetHealth: true
