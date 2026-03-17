@@ -1,5 +1,5 @@
 # Env values (solo templates .example se trackean)
-envs/
+envs/*
 !envs/*.example
 
 # OS / Editor
