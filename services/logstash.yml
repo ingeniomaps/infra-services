@@ -1,8 +1,8 @@
 # Logstash - Pipeline de procesamiento de logs.
-# Pipeline en infra/services/logstash/pipeline; config en logstash/config.
+# Pipeline en services/logstash/pipeline; config en logstash/config.
 # El pipeline por defecto es un placeholder (stdin/stdout). Ajustar para producción.
 # Red: docker network create ${NETWORK_NAME}
-# Uso: docker compose -f infra/services/logstash.yml --env-file .env up -d
+# Uso: make infra-logstash
 
 name: ${PROJECT_PREFIX:-logstash}${PROJECT_PREFIX:+-logstash}
 
@@ -13,8 +13,8 @@ services:
     environment:
       LS_JAVA_OPTS: ${LS_JAVA_OPTS:--Xms512m -Xmx512m}
     volumes:
-      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
-      - ./logstash/config:/usr/share/logstash/config:ro
+      - ${INFRA_SERVICES_PATH}/logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - ${INFRA_SERVICES_PATH}/logstash/config:/usr/share/logstash/config:ro
     networks:
       - default
     ports:

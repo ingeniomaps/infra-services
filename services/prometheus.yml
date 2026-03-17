@@ -1,7 +1,7 @@
 # Prometheus - Métricas y alertas.
-# Config: infra/services/prometheus/prometheus.yml (añadir scrape_configs para tus servicios).
+# Config: services/prometheus/prometheus.yml (añadir scrape_configs para tus servicios).
 # Red: docker network create ${NETWORK_NAME}
-# Uso: docker compose -f infra/services/prometheus.yml --env-file .env up -d
+# Uso: make infra-monitoring
 
 name: ${PROJECT_PREFIX:-prometheus}${PROJECT_PREFIX:+-prometheus}
 
@@ -16,7 +16,7 @@ services:
       - '--storage.tsdb.retention.size=${PROMETHEUS_RETENTION_SIZE:-10GB}'
       - '--web.enable-lifecycle'
     volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ${INFRA_SERVICES_PATH}/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - data:/prometheus
     networks:
       - default

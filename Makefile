@@ -16,6 +16,9 @@ INFRA_ENVS     ?= envs
 INFRA_SERVICES  = $(INFRA_ROOT)/services
 INFRA_BASE      = docker compose --env-file .env --env-file $(INFRA_ENVS)/.env.network
 
+# Ruta absoluta para volume mounts en compose files
+export INFRA_SERVICES_PATH := $(CURDIR)/$(INFRA_SERVICES)
+
 # Compose con .env especifico por servicio
 define infra
 $(INFRA_BASE) --env-file $(INFRA_ENVS)/.env.$(1)
