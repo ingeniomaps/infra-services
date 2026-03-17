@@ -1,0 +1,32 @@
+# Kafka UI - Producción FUERTE (kafbat fork, más recursos para clusters grandes).
+# KAFKA_BOOTSTRAP_SERVERS para scale: kafka-1:9092,kafka-2:9092,kafka-3:9092
+# Red: docker network create ${NETWORK_NAME}
+# Uso: docker compose -f infra/services/kafka-ui-scale.yml --env-file .env up -d
+
+name: ${PROJECT_PREFIX:-kafka-ui-scale}${PROJECT_PREFIX:+-kafka-ui-scale}
+
+services:
+  kafka-ui:
+    image: ghcr.io/kafbat/kafka-ui:v1.4.2
+    container_name: ${PROJECT_PREFIX:-kafka-ui}${PROJECT_PREFIX:+-kafka-ui}
+    environment:
+      KAFKA_CLUSTERS_0_NAME: ${KAFKA_UI_CLUSTER_NAME:-cluster}
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka-1:9092,kafka-2:9092,kafka-3:9092}
+    networks:
+      - default
+    ports:
+      - '${KAFKA_UI_PORT:-8081}:8080'
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+
+networks:
+  default:
+    name: ${NETWORK_NAME}
+    external: true
