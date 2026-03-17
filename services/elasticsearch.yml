@@ -1,0 +1,49 @@
+# Elasticsearch - Producción BAJO (single-node, carga moderada).
+# Opcional: ELASTICSEARCH_XPACK_SECURITY=true y usuario/contraseña para producción.
+# Red: docker network create ${NETWORK_NAME}
+# Uso: docker compose -f infra/services/elasticsearch.yml --env-file .env up -d
+
+name: ${PROJECT_PREFIX:-elasticsearch}${PROJECT_PREFIX:+-elasticsearch}
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.3.1
+    container_name: ${PROJECT_PREFIX:-elasticsearch}${PROJECT_PREFIX:+-elasticsearch}
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: ${ELASTICSEARCH_XPACK_SECURITY:-false}
+      ES_JAVA_OPTS: ${ELASTICSEARCH_JAVA_OPTS:--Xms1g -Xmx1g}
+      bootstrap.memory_lock: "true"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    networks:
+      - default
+    volumes:
+      - data:/usr/share/elasticsearch/data
+    ports:
+      - '${ELASTICSEARCH_PORT:-9200}:9200'
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -f http://localhost:9200/_cluster/health || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+
+volumes:
+  data:
+    driver: local
+
+networks:
+  default:
+    name: ${NETWORK_NAME}
+    external: true

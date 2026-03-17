@@ -1,0 +1,15 @@
+# Elasticsearch - Override de recursos para producción FUERTE.
+# Uso: docker compose -f elasticsearch.yml -f elasticsearch-scale.yml up -d
+
+name: ${PROJECT_PREFIX:-elasticsearch}${PROJECT_PREFIX:+-elasticsearch}
+
+services:
+  elasticsearch:
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+          cpus: '4'
+        reservations:
+          memory: 4G
+          cpus: '2'

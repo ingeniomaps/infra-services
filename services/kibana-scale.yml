@@ -1,0 +1,15 @@
+# Kibana - Override de recursos para producción FUERTE.
+# Uso: docker compose -f kibana.yml -f kibana-scale.yml up -d
+
+name: ${PROJECT_PREFIX:-kibana}${PROJECT_PREFIX:+-kibana}
+
+services:
+  kibana:
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
