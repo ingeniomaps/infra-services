@@ -28,7 +28,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    ports:
+      - '127.0.0.1:5433:5432'
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     deploy:
       resources:
         limits:

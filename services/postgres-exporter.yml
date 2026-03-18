@@ -11,17 +11,22 @@ services:
     image: prometheuscommunity/postgres-exporter:v0.18.0
     container_name: ${PROJECT_PREFIX:-postgres-exporter}${PROJECT_PREFIX:+-postgres-exporter}
     environment:
-      DATA_SOURCE_NAME: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST:-postgres}:${POSTGRES_PORT:-5432}/${POSTGRES_DB}?sslmode=disable
+      DATA_SOURCE_NAME: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST:-postgres}:${POSTGRES_PORT:-5432}/${POSTGRES_DB}?sslmode=prefer
     networks:
       - default
     ports:
-      - '9187:9187'
+      - '127.0.0.1:9187:9187'
     healthcheck:
       test: ['CMD-SHELL', 'wget -q --spider http://localhost:9187/ || exit 1']
       interval: 30s
       timeout: 5s
       retries: 3
+    read_only: true
+    tmpfs:
+      - /tmp
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     deploy:
       resources:
         limits:

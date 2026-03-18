@@ -15,8 +15,18 @@ services:
     networks:
       - default
     ports:
-      - '${KAFKA_UI_PORT:-8081}:8080'
+      - '127.0.0.1:${KAFKA_UI_PORT:-8081}:8080'
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -q --spider http://localhost:8080/api/clusters || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 3
     restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
     deploy:
       resources:
         limits:

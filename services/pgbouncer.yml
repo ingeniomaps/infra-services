@@ -32,8 +32,10 @@ services:
       timeout: 5s
       retries: 5
     ports:
-      - '${PGBOUNCER_PORT:-6432}:6432'
+      - '127.0.0.1:${PGBOUNCER_PORT:-6432}:6432'
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     deploy:
       resources:
         limits:

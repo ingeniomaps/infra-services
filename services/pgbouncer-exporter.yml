@@ -11,17 +11,22 @@ services:
     image: prometheuscommunity/pgbouncer-exporter:v0.11.0
     container_name: ${PROJECT_PREFIX:-pgbouncer-exporter}${PROJECT_PREFIX:+-pgbouncer-exporter}
     command:
-      - '--pgBouncer.connectionString=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${PGBOUNCER_HOST:-pgbouncer}:${PGBOUNCER_PORT:-6432}/pgbouncer?sslmode=disable'
+      - '--pgBouncer.connectionString=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${PGBOUNCER_HOST:-pgbouncer}:${PGBOUNCER_PORT:-6432}/pgbouncer?sslmode=prefer'
     networks:
       - default
     ports:
-      - '9127:9127'
+      - '127.0.0.1:9127:9127'
     healthcheck:
       test: ['CMD-SHELL', 'wget -q --spider http://localhost:9127/ || exit 1']
       interval: 30s
       timeout: 5s
       retries: 3
+    read_only: true
+    tmpfs:
+      - /tmp
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     deploy:
       resources:
         limits:

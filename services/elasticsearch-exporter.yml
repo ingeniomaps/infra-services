@@ -17,13 +17,18 @@ services:
     networks:
       - default
     ports:
-      - '9114:9114'
+      - '127.0.0.1:9114:9114'
     healthcheck:
       test: ['CMD-SHELL', 'wget -q --spider http://localhost:9114/ || exit 1']
       interval: 30s
       timeout: 5s
       retries: 3
+    read_only: true
+    tmpfs:
+      - /tmp
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     deploy:
       resources:
         limits:

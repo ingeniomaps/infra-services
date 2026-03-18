@@ -36,8 +36,10 @@ services:
       retries: 5
       start_period: 30s
     ports:
-      - '${KAFKA_PORT:-9092}:9092'
+      - '127.0.0.1:${KAFKA_PORT:-9092}:9092'
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     deploy:
       resources:
         limits:

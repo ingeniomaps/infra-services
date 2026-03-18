@@ -16,13 +16,18 @@ services:
     networks:
       - default
     ports:
-      - '9121:9121'
+      - '127.0.0.1:9121:9121'
     healthcheck:
       test: ['CMD-SHELL', 'wget -q --spider http://localhost:9121/health || exit 1']
       interval: 30s
       timeout: 5s
       retries: 3
+    read_only: true
+    tmpfs:
+      - /tmp
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     deploy:
       resources:
         limits:
