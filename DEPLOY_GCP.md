@@ -8,6 +8,10 @@ Tener la carpeta (o el repo) en un servidor y levantar
 solo los compose que necesites. Cada YML es independiente;
 comparten la red via `${NETWORK_NAME}`.
 
+Todos los servicios bindean puertos a `127.0.0.1` — solo
+accesibles desde la VM. HAProxy es el unico punto de
+entrada externo (`0.0.0.0:80/443`).
+
 ## 1. Crear la VM
 
 En Google Cloud Console → Compute Engine → Create instance:
@@ -16,7 +20,7 @@ En Google Cloud Console → Compute Engine → Create instance:
   - Dev/staging: `e2-medium` (2 vCPU, 4 GB)
   - Produccion: `e2-standard-4` (4 vCPU, 16 GB)
 - **Boot disk**: Debian 12 o Ubuntu 22.04 LTS, >= 50 GB
-- **Firewall**: Allow HTTP/HTTPS si expones servicios
+- **Firewall**: Allow HTTP/HTTPS (solo llega a HAProxy)
 
 ## 2. Instalar Docker
 
@@ -44,28 +48,35 @@ cp .env.example .env
 nano .env   # configurar variables y passwords
 ```
 
+Copiar los env templates y configurar:
+
+```bash
+cp .infra/envs/.env.network.example envs/.env.network
+cp .infra/envs/.env.postgres.example envs/.env.postgres
+cp .infra/envs/.env.redis.example envs/.env.redis
+# ... repetir para cada servicio que necesites
+# IMPORTANTE: configurar passwords en cada archivo
+```
+
 ## 4. Crear red y desplegar
 
 ```bash
-# Crear red (nombre de NETWORK_NAME en .env)
-docker network create nunzio-net
+# Crear red (nombre de NETWORK_NAME en .env.network)
+source envs/.env.network && docker network create "$NETWORK_NAME"
 
 # Desplegar solo lo que necesites
-docker compose --env-file .env \
-  --env-file envs/.env.postgres \
-  -f .infra/services/postgres.yml up -d
-
-docker compose --env-file .env \
-  --env-file envs/.env.redis \
-  -f .infra/services/redis.yml up -d
+make infra-essential    # postgres + redis
+make infra-full         # todo
+make infra-full-scale   # todo con recursos de produccion
 ```
 
-O si usas el Makefile:
+O manualmente:
 
 ```bash
-make infra-network
-make infra-postgres
-make infra-redis
+docker compose --env-file .env \
+  --env-file envs/.env.network \
+  --env-file envs/.env.postgres \
+  -f .infra/services/postgres.yml up -d
 ```
 
 ## 5. Replicas
@@ -88,6 +99,11 @@ Inyectar via variable del pipeline o Infisical.
 
 ## 7. Firewall
 
-VPC network → Firewall → Create rule. Restringir
-Source IP ranges y abrir solo los puertos necesarios
-(5432, 6379, 9090, 3000, etc.).
+VPC network → Firewall → Create rule.
+
+Solo necesitas abrir **puertos 80 y 443** (HAProxy).
+Todos los demas servicios (Postgres, Redis, Kafka, etc.)
+bindean a `127.0.0.1` y no son accesibles desde fuera
+de la VM.
+
+Opcionalmente abrir `22` (SSH) restringido a tu IP.
