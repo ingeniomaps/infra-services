@@ -4,6 +4,9 @@
 # Toolkit de infraestructura reutilizable. Cada servicio tiene un compose
 # individual con recursos base y un override -scale.yml para produccion.
 #
+# Puertos: todos los servicios bindean a 127.0.0.1 (solo accesibles desde el host).
+# Solo HAProxy expone en 0.0.0.0 (accesible externamente).
+#
 # Uso desde un proyecto:
 #   INFRA_ROOT := .infra
 #   INFRA_ENVS := infra/envs     # donde el proyecto guarda sus env values
@@ -42,8 +45,9 @@ infra-network: ## (Infra) Crear red Docker (requerida por los servicios)
 .PHONY: infra-postgres infra-postgres-replica infra-pgbouncer
 .PHONY: infra-redis infra-redis-cluster
 .PHONY: infra-kafka infra-kafka-ui
-.PHONY: infra-elasticsearch infra-monitoring infra-logstash infra-haproxy
+.PHONY: infra-elasticsearch infra-kibana infra-monitoring infra-logstash infra-haproxy
 .PHONY: infra-essential infra-ha infra-full infra-full-scale
+.PHONY: infra-exporters infra-postgres-exporter infra-redis-exporter infra-pgbouncer-exporter infra-kafka-exporter infra-elasticsearch-exporter
 .PHONY: infra-down infra-status
 
 infra-postgres: infra-network ## (Infra) Iniciar PostgreSQL
@@ -67,8 +71,11 @@ infra-kafka: infra-network ## (Infra) Iniciar Kafka (KRaft, sin Zookeeper)
 infra-kafka-ui: infra-network ## (Infra) Iniciar Kafka UI
 	@$(call infra,kafka) -f $(INFRA_SERVICES)/kafka-ui.yml up -d
 
-infra-elasticsearch: infra-network ## (Infra) Iniciar Elasticsearch + Kibana
-	@$(call infra,elasticsearch) -f $(INFRA_SERVICES)/elasticsearch.yml -f $(INFRA_SERVICES)/kibana.yml up -d
+infra-elasticsearch: infra-network ## (Infra) Iniciar Elasticsearch
+	@$(call infra,elasticsearch) -f $(INFRA_SERVICES)/elasticsearch.yml up -d
+
+infra-kibana: infra-network ## (Infra) Iniciar Kibana
+	@$(call infra,elasticsearch) -f $(INFRA_SERVICES)/kibana.yml up -d
 
 infra-monitoring: infra-network ## (Infra) Iniciar Prometheus + Grafana
 	@$(call infra,monitoring) -f $(INFRA_SERVICES)/prometheus.yml -f $(INFRA_SERVICES)/grafana.yml up -d
@@ -78,6 +85,27 @@ infra-logstash: infra-network ## (Infra) Iniciar Logstash
 
 infra-haproxy: infra-network ## (Infra) Iniciar HAProxy
 	@$(call infra,haproxy) -f $(INFRA_SERVICES)/haproxy.yml up -d
+
+# ============================================================================
+# Exporters (Prometheus)
+# ============================================================================
+
+infra-postgres-exporter: infra-network ## (Infra) Iniciar PostgreSQL exporter
+	@$(call infra,postgres) -f $(INFRA_SERVICES)/postgres-exporter.yml up -d
+
+infra-redis-exporter: infra-network ## (Infra) Iniciar Redis exporter
+	@$(call infra,redis) -f $(INFRA_SERVICES)/redis-exporter.yml up -d
+
+infra-pgbouncer-exporter: infra-network ## (Infra) Iniciar PgBouncer exporter
+	@$(call infra,postgres) -f $(INFRA_SERVICES)/pgbouncer-exporter.yml up -d
+
+infra-kafka-exporter: infra-network ## (Infra) Iniciar Kafka exporter
+	@$(call infra,kafka) -f $(INFRA_SERVICES)/kafka-exporter.yml up -d
+
+infra-elasticsearch-exporter: infra-network ## (Infra) Iniciar Elasticsearch exporter
+	@$(call infra,elasticsearch) -f $(INFRA_SERVICES)/elasticsearch-exporter.yml up -d
+
+infra-exporters: infra-postgres-exporter infra-redis-exporter infra-pgbouncer-exporter infra-kafka-exporter infra-elasticsearch-exporter ## (Infra) Iniciar todos los exporters
 
 # ============================================================================
 # Composites
@@ -98,6 +126,7 @@ infra-full: infra-network ## (Infra) Iniciar TODA la infraestructura
 		--env-file $(INFRA_ENVS)/.env.elasticsearch \
 		--env-file $(INFRA_ENVS)/.env.monitoring \
 		--env-file $(INFRA_ENVS)/.env.logstash \
+		--env-file $(INFRA_ENVS)/.env.haproxy \
 		-f $(INFRA_SERVICES)/postgres.yml \
 		-f $(INFRA_SERVICES)/postgres-replica.yml \
 		-f $(INFRA_SERVICES)/pgbouncer.yml \
@@ -110,6 +139,12 @@ infra-full: infra-network ## (Infra) Iniciar TODA la infraestructura
 		-f $(INFRA_SERVICES)/prometheus.yml \
 		-f $(INFRA_SERVICES)/grafana.yml \
 		-f $(INFRA_SERVICES)/logstash.yml \
+		-f $(INFRA_SERVICES)/haproxy.yml \
+		-f $(INFRA_SERVICES)/postgres-exporter.yml \
+		-f $(INFRA_SERVICES)/redis-exporter.yml \
+		-f $(INFRA_SERVICES)/pgbouncer-exporter.yml \
+		-f $(INFRA_SERVICES)/kafka-exporter.yml \
+		-f $(INFRA_SERVICES)/elasticsearch-exporter.yml \
 		up -d
 	@echo "Infraestructura completa iniciada"
 
@@ -121,15 +156,26 @@ infra-full-scale: infra-network ## (Infra) Iniciar infra con recursos de producc
 		--env-file $(INFRA_ENVS)/.env.kafka \
 		--env-file $(INFRA_ENVS)/.env.elasticsearch \
 		--env-file $(INFRA_ENVS)/.env.monitoring \
+		--env-file $(INFRA_ENVS)/.env.logstash \
+		--env-file $(INFRA_ENVS)/.env.haproxy \
 		-f $(INFRA_SERVICES)/postgres.yml -f $(INFRA_SERVICES)/postgres-scale.yml \
 		-f $(INFRA_SERVICES)/postgres-replica.yml -f $(INFRA_SERVICES)/postgres-replica-scale.yml \
 		-f $(INFRA_SERVICES)/pgbouncer.yml -f $(INFRA_SERVICES)/pgbouncer-scale.yml \
 		-f $(INFRA_SERVICES)/redis.yml -f $(INFRA_SERVICES)/redis-scale.yml \
 		-f $(INFRA_SERVICES)/redis-cluster.yml -f $(INFRA_SERVICES)/redis-cluster-scale.yml \
-		-f $(INFRA_SERVICES)/kafka.yml -f $(INFRA_SERVICES)/kafka-scale.yml \
+		-f $(INFRA_SERVICES)/kafka-scale.yml \
+		-f $(INFRA_SERVICES)/kafka-ui-scale.yml \
 		-f $(INFRA_SERVICES)/elasticsearch.yml -f $(INFRA_SERVICES)/elasticsearch-scale.yml \
+		-f $(INFRA_SERVICES)/kibana.yml -f $(INFRA_SERVICES)/kibana-scale.yml \
 		-f $(INFRA_SERVICES)/prometheus.yml -f $(INFRA_SERVICES)/prometheus-scale.yml \
 		-f $(INFRA_SERVICES)/grafana.yml -f $(INFRA_SERVICES)/grafana-scale.yml \
+		-f $(INFRA_SERVICES)/logstash.yml -f $(INFRA_SERVICES)/logstash-scale.yml \
+		-f $(INFRA_SERVICES)/haproxy.yml -f $(INFRA_SERVICES)/haproxy-scale.yml \
+		-f $(INFRA_SERVICES)/postgres-exporter.yml \
+		-f $(INFRA_SERVICES)/redis-exporter.yml \
+		-f $(INFRA_SERVICES)/pgbouncer-exporter.yml \
+		-f $(INFRA_SERVICES)/kafka-exporter.yml \
+		-f $(INFRA_SERVICES)/elasticsearch-exporter.yml \
 		up -d
 	@echo "Infraestructura con escala de produccion iniciada"
 
@@ -140,6 +186,7 @@ infra-full-scale: infra-network ## (Infra) Iniciar infra con recursos de producc
 infra-down: ## (Infra) Detener TODA la infraestructura
 	@echo "Deteniendo infraestructura..."
 	@for f in $(INFRA_SERVICES)/*.yml; do \
+		case "$$f" in *-scale.yml) continue ;; esac; \
 		$(INFRA_BASE) -f "$$f" down 2>/dev/null || true; \
 	done
 	@echo "Infraestructura detenida"
@@ -152,6 +199,7 @@ infra-status: ## (Infra) Estado de servicios de infraestructura
 		--filter "name=redis" \
 		--filter "name=kafka" \
 		--filter "name=elasticsearch" \
+		--filter "name=es-exporter" \
 		--filter "name=kibana" \
 		--filter "name=prometheus" \
 		--filter "name=grafana" \
