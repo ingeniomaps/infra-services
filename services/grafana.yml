@@ -21,7 +21,10 @@ services:
       - data:/var/lib/grafana
       - ${INFRA_SERVICES_PATH}/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
       - ${INFRA_SERVICES_PATH}/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
-      - ${INFRA_SERVICES_PATH}/grafana/provisioning/alerting:/etc/grafana/provisioning/alerting:ro
+      # Alerting: solo montar si GRAFANA_SLACK_WEBHOOK_URL está configurado.
+      # Sin webhook, Grafana falla al validar el contact point de Slack.
+      # Para habilitar: definir GRAFANA_SLACK_WEBHOOK_URL y descomentar la línea.
+      # - ${INFRA_SERVICES_PATH}/grafana/provisioning/alerting:/etc/grafana/provisioning/alerting:ro
       - ${INFRA_SERVICES_PATH}/grafana/dashboards:/var/lib/grafana/dashboards:ro
     networks:
       - default

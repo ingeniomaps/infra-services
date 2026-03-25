@@ -11,7 +11,7 @@ services:
     container_name: ${PROJECT_PREFIX:-pgbouncer}${PROJECT_PREFIX:+-pgbouncer}
     environment:
       DB_HOST: ${POSTGRES_HOST:-postgres}
-      DB_PORT: ${POSTGRES_PORT:-5432}
+      DB_PORT: ${POSTGRES_INTERNAL_PORT:-5432}
       DB_USER: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       DB_NAME: ${POSTGRES_DB}

@@ -24,7 +24,7 @@ services:
       timeout: 5s
       retries: 5
     ports:
-      - '127.0.0.1:${POSTGRES_PORT:-5432}:5432'
+      - '${POSTGRES_BIND:-127.0.0.1}:${POSTGRES_PORT:-5432}:5432'
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true

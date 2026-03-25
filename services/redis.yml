@@ -16,7 +16,7 @@ services:
       --maxmemory ${REDIS_MAXMEMORY:-1gb}
       --maxmemory-policy ${REDIS_MAXMEMORY_POLICY:-allkeys-lru}
       --appendonly yes
-      --requirepass $$REDIS_PASSWORD
+      --requirepass ${REDIS_PASSWORD}
     volumes:
       - data:/data
     networks:
@@ -31,7 +31,7 @@ services:
       timeout: 3s
       retries: 5
     ports:
-      - '127.0.0.1:${REDIS_PORT:-6379}:6379'
+      - '${REDIS_BIND:-127.0.0.1}:${REDIS_PORT:-6379}:6379'
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true

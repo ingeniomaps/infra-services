@@ -185,6 +185,39 @@ infra-full-scale: infra-network ## (Infra) Iniciar infra con recursos de producc
 
 infra-down: ## (Infra) Detener TODA la infraestructura
 	@echo "Deteniendo infraestructura..."
+	@# Bajar cada composite con los mismos archivos que lo levantaron (project name debe coincidir)
+	@$(INFRA_BASE) \
+		--env-file $(INFRA_ENVS)/.env.postgres \
+		--env-file $(INFRA_ENVS)/.env.redis \
+		--env-file $(INFRA_ENVS)/.env.kafka \
+		--env-file $(INFRA_ENVS)/.env.elasticsearch \
+		--env-file $(INFRA_ENVS)/.env.monitoring \
+		--env-file $(INFRA_ENVS)/.env.logstash \
+		--env-file $(INFRA_ENVS)/.env.haproxy \
+		-f $(INFRA_SERVICES)/postgres.yml \
+		-f $(INFRA_SERVICES)/postgres-replica.yml \
+		-f $(INFRA_SERVICES)/pgbouncer.yml \
+		-f $(INFRA_SERVICES)/redis.yml \
+		-f $(INFRA_SERVICES)/redis-cluster.yml \
+		-f $(INFRA_SERVICES)/kafka.yml \
+		-f $(INFRA_SERVICES)/kafka-ui.yml \
+		-f $(INFRA_SERVICES)/elasticsearch.yml \
+		-f $(INFRA_SERVICES)/kibana.yml \
+		-f $(INFRA_SERVICES)/prometheus.yml \
+		-f $(INFRA_SERVICES)/grafana.yml \
+		-f $(INFRA_SERVICES)/logstash.yml \
+		-f $(INFRA_SERVICES)/haproxy.yml \
+		-f $(INFRA_SERVICES)/postgres-exporter.yml \
+		-f $(INFRA_SERVICES)/redis-exporter.yml \
+		-f $(INFRA_SERVICES)/pgbouncer-exporter.yml \
+		-f $(INFRA_SERVICES)/kafka-exporter.yml \
+		-f $(INFRA_SERVICES)/elasticsearch-exporter.yml \
+		down --remove-orphans 2>/dev/null || true
+	@# Bajar essential (postgres + redis) — project name distinto al full
+	@$(INFRA_BASE) --env-file $(INFRA_ENVS)/.env.postgres --env-file $(INFRA_ENVS)/.env.redis \
+		-f $(INFRA_SERVICES)/postgres.yml -f $(INFRA_SERVICES)/redis.yml \
+		down --remove-orphans 2>/dev/null || true
+	@# Bajar servicios individuales (si se levantaron por separado)
 	@for f in $(INFRA_SERVICES)/*.yml; do \
 		case "$$f" in *-scale.yml) continue ;; esac; \
 		$(INFRA_BASE) -f "$$f" down 2>/dev/null || true; \
